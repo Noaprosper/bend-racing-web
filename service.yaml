@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bend-racing-web
+  namespace: bend-racing-web
+  labels:
+    app: bend-racing-web
+spec:
+  type: ClusterIP
+  selector:
+    app: bend-racing-web
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP

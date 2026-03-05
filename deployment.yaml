@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bend-racing-web
+  namespace: bend-racing-web
+  labels:
+    app: bend-racing-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bend-racing-web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: bend-racing-web
+    spec:
+      containers:
+        - name: nginx
+          image: rg.registry.scw.cloud/mon-namespace/bend-racing:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
