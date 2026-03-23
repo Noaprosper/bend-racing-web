@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-gray-100 bg-dark antialiased;
+    font-family: 'Outfit', sans-serif;
+  }
+  h1, h2, h3 {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+}

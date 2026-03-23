@@ -3,10 +3,29 @@ kind: Ingress
 metadata:
   name: bend-racing-web
   namespace: bend-racing-web
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - bend-racing.fr
+        - www.bend-racing.fr
+      secretName: bend-racing-tls
   rules:
-    - http:
+    - host: bend-racing.fr
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bend-racing-web
+                port:
+                  number: 80
+    - host: www.bend-racing.fr
+      http:
         paths:
           - path: /
             pathType: Prefix

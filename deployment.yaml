@@ -22,8 +22,9 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: rg.registry.scw.cloud/mon-namespace/bend-racing:latest
-          imagePullPolicy: IfNotPresent
+          # Image Docker Hub (multi-arch: amd64 + arm64) - remplacer USER par ton Docker Hub username
+          image: docker.io/noaprosper/bend-racing-web:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP
