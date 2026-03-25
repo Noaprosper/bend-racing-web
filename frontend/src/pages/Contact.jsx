@@ -1,11 +1,8 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SITE } from '../data/site';
 import YouTubeVideos from '../components/YouTubeVideos';
 
 export default function Contact() {
-  const [form, setForm] = useState({ nom: '', email: '', message: '' });
-
   return (
     <div className="py-12 lg:py-20">
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,39 +62,6 @@ export default function Contact() {
             <div className="mt-8">
               <YouTubeVideos count={4} />
             </div>
-          </div>
-
-          <div>
-            <h2 className="font-display text-2xl text-white mb-4">Nous écrire</h2>
-            <form className="space-y-4">
-              <input
-                type="text"
-                placeholder="Nom"
-                value={form.nom}
-                onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-lighter border border-gray-700 rounded text-gray-200"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-lighter border border-gray-700 rounded text-gray-200"
-              />
-              <textarea
-                rows={5}
-                placeholder="Message"
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-lighter border border-gray-700 rounded text-gray-200"
-              />
-              <button
-                type="submit"
-                className="w-full py-4 bg-primary text-white font-semibold hover:bg-primary-dark rounded"
-              >
-                Envoyer
-              </button>
-            </form>
           </div>
         </div>
       </section>
