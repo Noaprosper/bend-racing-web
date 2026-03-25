@@ -21,14 +21,32 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 
 Configurer chez votre registrar : **bend-racing.fr** et **www.bend-racing.fr** → A record → IP du LoadBalancer
 
+## Backend API (emails TEM)
+
+L'API backend envoie les demandes de rendez-vous via Scaleway TEM.
+
+**Créer le secret** (clé API + project ID) :
+```bash
+kubectl create secret generic bend-racing-tem -n bend-racing-web \
+  --from-literal=scw-secret-key=VOTRE_CLE_SECRETE \
+  --from-literal=scw-project-id=VOTRE_PROJECT_ID
+```
+
+**Build et push** :
+```bash
+cd backend && docker build -t noaprosper/bend-racing-api:latest . && docker push noaprosper/bend-racing-api:latest
+```
+
 ## Fichiers (ordre d'apply)
 
 1. `ingress-nginx-controller.yaml` – NGINX Ingress + LoadBalancer (LB externe)
 2. `namespace.yaml` – Namespace bend-racing-web
-3. `cluster-issuer.yaml` – ClusterIssuer Let's Encrypt (adapter l'email si besoin)
-4. `deployment.yaml` – Application
-5. `service.yaml` – Service ClusterIP
-6. `ingress.yaml` – Route bend-racing.fr → app (TLS + redirection HTTP→HTTPS)
+3. `cluster-issuer.yaml` – ClusterIssuer Let's Encrypt
+4. `deployment.yaml` – Frontend
+5. `service.yaml` – Service frontend
+6. `backend-deployment.yaml` – API (emails TEM)
+7. `backend-service.yaml` – Service API
+8. `ingress.yaml` – Routes / et /api (TLS)
 
 ```bash
 kubectl apply -f ~/Desktop/bend-racing-web/

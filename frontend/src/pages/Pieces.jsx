@@ -39,14 +39,7 @@ export default function Pieces() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-wrap gap-4">
-          <button className="px-8 py-3 bg-primary text-white font-medium hover:bg-primary-dark rounded">
-            Commander
-          </button>
-          <button className="px-8 py-3 border border-primary text-primary font-medium hover:bg-primary hover:text-white rounded">
-            Demander un devis
-          </button>
-        </div>
+        {/* Actions supprimées (boutons CTA) pour l'onglet pièces */}
       </section>
     </div>
   );

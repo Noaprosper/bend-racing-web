@@ -6,6 +6,8 @@ import Atelier from './pages/Atelier';
 import Preparation from './pages/Preparation';
 import Pieces from './pages/Pieces';
 import RendezVous from './pages/RendezVous';
+import Devis from './pages/Devis';
+import AdminVehicules from './pages/AdminVehicules';
 import APropos from './pages/APropos';
 import Realisations from './pages/Realisations';
 import Contact from './pages/Contact';
@@ -21,6 +23,8 @@ export default function App() {
           <Route path="preparation" element={<Preparation />} />
           <Route path="pieces" element={<Pieces />} />
           <Route path="rendez-vous" element={<RendezVous />} />
+          <Route path="devis" element={<Devis />} />
+          <Route path="admin/vehicules" element={<AdminVehicules />} />
           <Route path="a-propos" element={<APropos />} />
           <Route path="realisations" element={<Realisations />} />
           <Route path="contact" element={<Contact />} />

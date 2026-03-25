@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bend-racing-api
+  namespace: bend-racing-web
+  labels:
+    app: bend-racing-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bend-racing-api
+  template:
+    metadata:
+      labels:
+        app: bend-racing-api
+    spec:
+      containers:
+        - name: api
+          image: docker.io/noaprosper/bend-racing-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: TO_EMAIL
+              value: "camille-benard@hotmail.com,clb200010@gmail.com"
+            - name: FROM_EMAIL
+              value: "rdv@rdv.bend-racing.fr"
+            - name: FROM_EMAIL_REPRISE
+              value: "reprise@reprise.bend-racing.fr"
+            - name: SCW_REGION
+              value: "fr-par"
+            - name: SCW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bend-racing-tem
+                  key: scw-secret-key
+            - name: SCW_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: bend-racing-tem
+                  key: scw-project-id
+            - name: VEHICULES_BASE_DIR
+              value: "/data/vehicules"
+            - name: VEHICULES_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: bend-racing-vehicules-admin
+                  key: admin-user
+            - name: VEHICULES_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bend-racing-vehicules-admin
+                  key: admin-password
+          volumeMounts:
+            - name: vehicules-data
+              mountPath: /data
+      volumes:
+        - name: vehicules-data
+          persistentVolumeClaim:
+            claimName: bend-racing-vehicules-pvc

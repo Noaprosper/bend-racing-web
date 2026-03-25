@@ -6,6 +6,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "32m"
 spec:
   ingressClassName: nginx
   tls:
@@ -17,6 +18,20 @@ spec:
     - host: bend-racing.fr
       http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: bend-racing-api
+                port:
+                  number: 3000
+          - path: /media
+            pathType: Prefix
+            backend:
+              service:
+                name: bend-racing-api
+                port:
+                  number: 3000
           - path: /
             pathType: Prefix
             backend:
@@ -27,6 +42,20 @@ spec:
     - host: www.bend-racing.fr
       http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: bend-racing-api
+                port:
+                  number: 3000
+          - path: /media
+            pathType: Prefix
+            backend:
+              service:
+                name: bend-racing-api
+                port:
+                  number: 3000
           - path: /
             pathType: Prefix
             backend:

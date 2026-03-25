@@ -51,7 +51,7 @@ export default function Preparation() {
             Pour les passionnés de circuit, nous proposons des préparations spécifiques track-day et racing avec optimisation complète : moteur, châssis, électronique.
           </p>
           <Link
-            to="/rendez-vous"
+            to="/devis"
             className="inline-block mt-4 px-6 py-2 bg-primary text-white font-medium hover:bg-primary-dark rounded"
           >
             Demander un devis
