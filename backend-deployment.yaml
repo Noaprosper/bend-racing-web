@@ -6,7 +6,7 @@ metadata:
   labels:
     app: bend-racing-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: bend-racing-api

@@ -29,9 +29,19 @@ const VEHICULES_BASE_DIR = process.env.VEHICULES_BASE_DIR || '/data/vehicules';
 const VEHICULES_DB_PATH = path.join(VEHICULES_BASE_DIR, 'vehicles.json');
 const VEHICULES_UPLOAD_DIR = path.join(VEHICULES_BASE_DIR, 'uploads');
 
+// Réalisations (même auth admin)
+const REALISATIONS_BASE_DIR = process.env.REALISATIONS_BASE_DIR || '/data/realisations';
+const REALISATIONS_DB_PATH = path.join(REALISATIONS_BASE_DIR, 'realisations.json');
+const REALISATIONS_UPLOAD_DIR = path.join(REALISATIONS_BASE_DIR, 'uploads');
+
 async function initVehiculesStorage() {
   await fs.mkdir(VEHICULES_BASE_DIR, { recursive: true });
   await fs.mkdir(VEHICULES_UPLOAD_DIR, { recursive: true });
+}
+
+async function initRealisationsStorage() {
+  await fs.mkdir(REALISATIONS_BASE_DIR, { recursive: true });
+  await fs.mkdir(REALISATIONS_UPLOAD_DIR, { recursive: true });
 }
 
 async function readVehiclesFromDisk() {
@@ -52,6 +62,25 @@ async function writeVehiclesToDisk(vehicles) {
   const tmp = `${VEHICULES_DB_PATH}.tmp`;
   await fs.writeFile(tmp, JSON.stringify({ vehicles }, null, 2), 'utf8');
   await fs.rename(tmp, VEHICULES_DB_PATH);
+}
+
+async function readRealisationsFromDisk() {
+  try {
+    const raw = await fs.readFile(REALISATIONS_DB_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.realisations)) return [];
+    return parsed.realisations;
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return [];
+    console.error('readRealisationsFromDisk error:', err);
+    return [];
+  }
+}
+
+async function writeRealisationsToDisk(realisations) {
+  const tmp = `${REALISATIONS_DB_PATH}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify({ realisations }, null, 2), 'utf8');
+  await fs.rename(tmp, REALISATIONS_DB_PATH);
 }
 
 function timingSafeEq(a, b) {
@@ -129,6 +158,27 @@ async function saveVehiclePhotos(vehicleId, photoAttachments) {
     const buf = Buffer.from(att.content, 'base64');
     await fs.writeFile(filePath, buf);
 
+    photosMeta.push({ filename: fileName, type: att.type || 'image/jpeg' });
+  }
+
+  return photosMeta;
+}
+
+async function saveRealisationPhotos(realisationId, photoAttachments) {
+  if (!photoAttachments || photoAttachments.length === 0) return [];
+
+  const dir = path.join(REALISATIONS_UPLOAD_DIR, realisationId);
+  await fs.mkdir(dir, { recursive: true });
+
+  const photosMeta = [];
+  for (let i = 0; i < photoAttachments.length; i++) {
+    const att = photoAttachments[i];
+    if (!att || !att.name || !att.content) continue;
+
+    const fileName = `${i + 1}-${path.basename(att.name)}`;
+    const filePath = path.join(dir, fileName);
+    const buf = Buffer.from(att.content, 'base64');
+    await fs.writeFile(filePath, buf);
     photosMeta.push({ filename: fileName, type: att.type || 'image/jpeg' });
   }
 
@@ -636,6 +686,103 @@ app.delete('/api/admin/vehicles/:vehicleId', requireVehiculesAdmin, async (req, 
 
   console.log('Admin delete vehicle done:', vehicleId);
   return res.json({ success: true });
+});
+
+// =========================
+// API réalisations (public + admin)
+// =========================
+app.get('/api/realisations', async (_, res) => {
+  await initRealisationsStorage();
+  const realisations = await readRealisationsFromDisk();
+  const normalized = realisations.map((r) => {
+    const photos = Array.isArray(r.photos) ? r.photos : [];
+    return {
+      ...r,
+      photos: photos.map((p) => ({
+        filename: p.filename,
+        type: p.type,
+        url: `/media/realisations/${r.id}/${encodeURIComponent(p.filename)}`,
+      })),
+    };
+  });
+  normalized.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  res.json({ realisations: normalized });
+});
+
+app.get('/api/admin/realisations', requireVehiculesAdmin, async (_, res) => {
+  await initRealisationsStorage();
+  const realisations = await readRealisationsFromDisk();
+  res.json({ realisations });
+});
+
+app.post('/api/admin/realisations', requireVehiculesAdmin, async (req, res) => {
+  const data = req.body || {};
+  const titre = toSafeString(data.titre);
+  const description = toSafeString(data.description);
+  const date = toSafeString(data.date);
+  const photosInput = data.photos || data.attachments;
+
+  if (!titre || !description) {
+    return res.status(400).json({ error: 'Titre et description sont obligatoires' });
+  }
+
+  await initRealisationsStorage();
+  const realisations = await readRealisationsFromDisk();
+
+  const realisationId = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const photoAttachments = normalizeAttachments(photosInput);
+  const photosMeta = await saveRealisationPhotos(realisationId, photoAttachments);
+
+  const realisation = {
+    id: realisationId,
+    createdAt,
+    titre,
+    description,
+    date: date || undefined,
+    photos: photosMeta,
+  };
+
+  realisations.push(realisation);
+  await writeRealisationsToDisk(realisations);
+
+  res.json({ success: true, realisationId });
+});
+
+app.delete('/api/admin/realisations/:realisationId', requireVehiculesAdmin, async (req, res) => {
+  const realisationId = toSafeString(req.params.realisationId);
+  if (!realisationId) return res.status(400).json({ error: 'realisationId manquant' });
+
+  await initRealisationsStorage();
+  const realisations = await readRealisationsFromDisk();
+  const idx = realisations.findIndex((r) => r && r.id === realisationId);
+  if (idx === -1) return res.status(404).json({ error: 'Réalisation introuvable' });
+
+  realisations.splice(idx, 1);
+  await writeRealisationsToDisk(realisations);
+
+  const dir = path.join(REALISATIONS_UPLOAD_DIR, realisationId);
+  try {
+    await fs.rm(dir, { recursive: true, force: true });
+  } catch (err) {
+    console.error('Erreur suppression photos réalisation:', err);
+  }
+
+  return res.json({ success: true });
+});
+
+// Photos réalisations
+app.get('/media/realisations/:realisationId/:filename', async (req, res) => {
+  const realisationId = toSafeString(req.params.realisationId);
+  const filename = toSafeString(req.params.filename);
+  const safeId = path.basename(realisationId);
+  const safeFilename = path.basename(filename);
+
+  const filePath = path.join(REALISATIONS_UPLOAD_DIR, safeId, safeFilename);
+  if (!fsSync.existsSync(filePath)) return res.status(404).send('Not found');
+
+  res.setHeader('Cache-Control', 'public, max-age=31536000');
+  return res.sendFile(filePath);
 });
 
 // Serveur des photos uploadées (pour affichage sur /vehicules)

@@ -8,6 +8,7 @@ import Pieces from './pages/Pieces';
 import RendezVous from './pages/RendezVous';
 import Devis from './pages/Devis';
 import AdminVehicules from './pages/AdminVehicules';
+import AdminRealisations from './pages/AdminRealisations';
 import APropos from './pages/APropos';
 import Realisations from './pages/Realisations';
 import Contact from './pages/Contact';
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="rendez-vous" element={<RendezVous />} />
           <Route path="devis" element={<Devis />} />
           <Route path="admin/vehicules" element={<AdminVehicules />} />
+          <Route path="admin/realisations" element={<AdminRealisations />} />
           <Route path="a-propos" element={<APropos />} />
           <Route path="realisations" element={<Realisations />} />
           <Route path="contact" element={<Contact />} />

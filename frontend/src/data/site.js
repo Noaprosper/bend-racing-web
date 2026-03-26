@@ -21,11 +21,15 @@ export const SITE = {
   },
   contact: {
     phone: '', // À compléter
-    email: 'contact@bend-racing.fr',
+    email: 'clb200010@gmail.com',
   },
   youtube: {
     channelUrl: 'https://www.youtube.com/@bendracing1752',
     channelId: 'UCGAfh5dRvICAYVpfj6dqZoQ',
+  },
+  social: {
+    youtube: 'https://www.youtube.com/@bendracing1752',
+    instagram: 'https://www.instagram.com/bend.racing/',
   },
   seo: {
     defaultDescription: 'Bend Racing – Atelier moto à Mougins, proche Cannes et Le Cannet. Spécialiste 2 roues : achat, préparation moteur, réparation et performance.',

@@ -1,8 +1,27 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SITE } from '../data/site';
-import YouTubeVideos from '../components/YouTubeVideos';
 
 export default function Accueil() {
+  const [realisations, setRealisations] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/realisations');
+        const data = await res.json();
+        if (!cancelled) setRealisations(data.realisations || []);
+      } catch {
+        if (!cancelled) setRealisations([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div>
       {/* Hero */}
@@ -79,13 +98,12 @@ export default function Accueil() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Achat / Revente de motos', desc: 'Reprise et dépôt-vente. Stock régulièrement renouvelé.', to: '/vehicules', icon: '🏍️' },
-              { title: 'Réparation et entretien', desc: 'Diagnostic, entretien complet et réparation mécanique.', to: '/atelier', icon: '🔧' },
-              { title: 'Préparation moteur', desc: 'Optimisation performance et réglages spécifiques.', to: '/preparation', icon: '⚡' },
-              { title: 'Pièces détachées et accessoires', desc: 'Large catalogue pour entretien et performance.', to: '/pieces', icon: '📦' },
-            ].map(({ title, desc, to, icon }) => (
+              { title: 'Achat / Revente de motos', desc: 'Reprise et dépôt-vente. Stock régulièrement renouvelé.', to: '/vehicules' },
+              { title: 'Réparation et entretien', desc: 'Diagnostic, entretien complet et réparation mécanique.', to: '/atelier' },
+              { title: 'Préparation moteur', desc: 'Optimisation performance et réglages spécifiques.', to: '/preparation' },
+              { title: 'Pièces détachées et accessoires', desc: 'Large catalogue pour entretien et performance.', to: '/pieces' },
+            ].map(({ title, desc, to }) => (
               <Link key={to} to={to} className="block p-6 bg-dark rounded-lg border border-gray-800 hover:border-primary transition-colors group">
-                <span className="text-3xl mb-3 block">{icon}</span>
                 <h3 className="font-display text-xl text-white group-hover:text-primary">{title}</h3>
                 <p className="mt-2 text-sm text-gray-400">{desc}</p>
               </Link>
@@ -94,36 +112,43 @@ export default function Accueil() {
         </div>
       </section>
 
-      {/* Réalisations */}
-      <section className="py-20 bg-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-4xl sm:text-5xl text-white mb-4">
-            Nos préparations
-          </h2>
-          <p className="max-w-2xl text-gray-400 mb-12">
-            Chaque moto préparée dans notre atelier est le fruit d'un travail de précision et de passion mécanique.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="aspect-video bg-dark-lighter rounded-lg border border-gray-800 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-gray-800 to-dark flex items-center justify-center text-gray-600">
-                  Photo préparation {i}
-                </div>
-              </div>
-            ))}
+      {/* Réalisations (affiché uniquement si au moins 1 entrée existe) */}
+      {realisations.length > 0 && (
+        <section className="py-20 bg-dark">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-display text-4xl sm:text-5xl text-white mb-4">
+              Nos préparations
+            </h2>
+            <p className="max-w-2xl text-gray-400 mb-12">
+              Chaque moto préparée dans notre atelier est le fruit d'un travail de précision et de passion mécanique.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {realisations.slice(0, 3).map((r) => (
+                <article key={r.id} className="bg-dark-lighter rounded-lg border border-gray-800 overflow-hidden">
+                  {r.photos?.[0]?.url ? (
+                    <img
+                      src={r.photos[0].url}
+                      alt={r.titre}
+                      className="aspect-video w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="aspect-video bg-gray-800 flex items-center justify-center text-gray-600">
+                      Pas de photo
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display text-lg text-white">{r.titre}</h3>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <Link to="/realisations" className="inline-block mt-8 text-primary hover:underline font-medium">
+              Voir toutes nos réalisations →
+            </Link>
           </div>
-          <Link to="/realisations" className="inline-block mt-8 text-primary hover:underline font-medium">
-            Voir toutes nos réalisations →
-          </Link>
-        </div>
-      </section>
-
-      {/* Dernières vidéos YouTube */}
-      <section className="py-20 bg-dark border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <YouTubeVideos count={4} />
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Avis clients */}
       <section className="py-20 bg-dark-lighter border-t border-gray-800">
